@@ -1,6 +1,9 @@
 name: Sus Challenge Webhook
 
 on:
+  push:  # Runs when any file is pushed to the repository
+    branches:
+      - main  # Adjust if your branch name is different
   schedule:
     - cron: "0 8,20 * * *"  # Runs at 8 AM & 8 PM UTC (12 AM & 12 PM Pacific)
   workflow_dispatch:  # Allows manual triggering
