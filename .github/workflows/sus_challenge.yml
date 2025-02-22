@@ -1,27 +1,25 @@
 name: Sus Challenge Webhook
 
-on:
-  schedule:
-    - cron: "0 8,20 * * *"  # Runs at 12 AM & 12 PM Pacific Time (converted to UTC)
-  workflow_dispatch:  # Allows manual trigger from GitHub Actions tab
+on: schedule: - cron: "0 8,20 * * *"  # Runs at 12 AM & 12 PM Pacific Time (UTC-8 & UTC-20) workflow_dispatch:
 
-jobs:
-  send_sus_challenge:
-    runs-on: ubuntu-latest
+jobs: send_sus_challenge: runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v3
 
-      - name: Set Up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: "3.9"
+  - name: Send Webhook Message
+    env:
+      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+    run: |
+      curl -X POST "$WEBHOOK_URL" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "username": "Gay Challenge!", 
+          "avatar_url": "YOUR_NEW_AVATAR_URL_HERE", 
+          "content": "🌈 **Gayest Comment Challenge!** 🌈\n💬 $(python get_challenge.py)\n🗳️ *Vote for the best response!* React with 🔥 or 💀."
+        }'
 
-      - name: Install Dependencies
-        run: pip install -r requirements.txt
+  - name: Wait before exit
+    run: sleep 5
 
-      - name: Run Sus Challenge Webhook
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: python sus_challenge_webhook.py
