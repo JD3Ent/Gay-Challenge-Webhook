@@ -5,7 +5,7 @@ import os
 from datetime import datetime, timedelta
 
 # Your Webhook URL
-WEBHOOK_URL = "https://discord.com/api/webhooks/1342750642531467264/EaMYeJkEKEclc47UxfjHNK1a4R5ZzmaXWOQ4dHhZBEPLnsCWhvc3X3UME7ek_18M6FgZ"
+WEBHOOK_URL = "https://discord.com/api/webhooks/1342757700479483984/DZnOYPMzrb3tkMN_T1XMSvoOFWC5HlIJv3mwtC-ykhoNSu-drCCaVw08qL388YGg30fh"
 
 ### API Endpoints ###
 CAR_API = "https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json"
