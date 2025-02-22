@@ -136,7 +136,7 @@ if DISCORD_WEBHOOK_URL:
 
 # Send test message to Webhook.site
 if TEST_WEBHOOK_URL:
-    test_response = requests.post(https://webhook.site/72442d34-5fed-4e69-ba6a-0f92233568c5, json=data)
+    test_response = requests.post("https://webhook.site/72442d34-5fed-4e69-ba6a-0f92233568c5", json=data)
     if test_response.status_code == 200:
         print("✅ Test challenge sent successfully to Webhook.site!")
     else:
