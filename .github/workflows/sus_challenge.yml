@@ -25,7 +25,7 @@ jobs:
             -d '{
               "username": "Gay Challenge!",
               "avatar_url": "YOUR_NEW_AVATAR_URL_HERE",
-              "content": "🌈 **Gayest Comment Challenge!** 💬 '"$(python3 sus_question_generator.py)"'"
+              "content": "🌈 **Gayest Comment Challenge!** 💬 '"$(python3 sus_challenge_webhook.py)"'"
             }'
 
       - name: Wait before exit
