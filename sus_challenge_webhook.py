@@ -4,13 +4,13 @@ import json
 import os
 from datetime import datetime, timedelta
 
-# Your Webhook URL
-WEBHOOK_URL = "https://discord.com/api/webhooks/1342757700479483984/DZnOYPMzrb3tkMN_T1XMSvoOFWC5HlIJv3mwtC-ykhoNSu-drCCaVw08qL388YGg30fh"
+# Your Webhook URL (Make sure this is set in GitHub Secrets if using Actions)
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 
 ### API Endpoints ###
 CAR_API = "https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json"
 SPORTS_API = "https://www.thesportsdb.com/api/v1/json/1/all_teams.php?s=Soccer"
-URBAN_DICTIONARY_API = "https://api.urbandictionary.com/v0/random"
+GAMING_CHARACTER_API = "https://api.open5e.com/monsters"  # Placeholder (Find a better game character API if needed)
 
 # JSON file for tracking past selections
 TRACKING_FILE = "selection_history.json"
@@ -20,18 +20,19 @@ MIDNIGHT_CLUB_CARS = [
     "Big Red DUB Escalade", "Black DUB EXT", "DUB Chrysler 300C", "DUB Dodge Magnum",
     "DUB Mercedes-Benz SL55 AMG", "68 Pontiac GTO", "DUB 96 Chevy Impala SS", "Hummer H1",
     "Lamborghini Murciélago", "Nissan Skyline GT-R R34", "Toyota Supra MK4",
-    "69 Pymouth Netcoder", " 2005 Ford Mustang GT", "Pagani Zonda C12", "81 Chevrolet Camaro Z28",
+    "69 Plymouth Netcoder", "2005 Ford Mustang GT", "Pagani Zonda C12", "81 Chevrolet Camaro Z28",
     "Mitsubishi 3000GT VR-4", "Saleen S7 Twin Turbo", "Audi RS4", "DUB Dodge Charger SRT8",
-    "Chrysler ME Four Twelve", "Volkswagen Golf R32", "Mitsubishi Lancer Evo VIII", "Saiku XS", "Bryston V",
-  "Scneller V8", "Cocotte", "Veloci", "Emu", "71 Bestia", "Smugglers Run Buggie", "SLF"
+    "Chrysler ME Four Twelve", "Volkswagen Golf R32", "Mitsubishi Lancer Evo VIII", "Saiku XS", 
+    "Bryston V", "Scneller V8", "Cocotte", "Veloci", "Emu", "71 Bestia", "Smugglers Run Buggie", "SLF"
 ]
 
 # Midnight Club Named Characters
 MIDNIGHT_CLUB_CHARACTERS = [
-    "Oscar", "Angel", "Apone" , "Moses", "Savo", "Tomoya", "Vince" , "Dice", "Gina", "Vito", "Andrew", "Phil",
-    "Vanessa", "Booke", "Lamont", "Carlos", "Bishop", "Kioshi", "Caesar", "Angel", "Leo", "Trust Fund Baby From MC2", "Hector"
-    "The City Champs", "Andrew", "Roy", "Annie",
-    "Fernando", "Karol", "Doc", "Baby-T", "Yo-Yo", "Nails", "Arnie", "Rachel", "Sara", "Kayla", "Walker", "AJ", "Lester", 
+    "Oscar", "Angel", "Apone", "Moses", "Savo", "Tomoya", "Vince", "Dice", "Gina", "Vito", "Andrew", "Phil",
+    "Vanessa", "Brooke", "Lamont", "Carlos", "Bishop", "Kioshi", "Caesar", "Angel", "Leo", 
+    "Trust Fund Baby From MC2", "Hector", "The City Champs", "Andrew", "Roy", "Annie",
+    "Fernando", "Karol", "Doc", "Baby-T", "Yo-Yo", "Nails", "Arnie", "Rachel", "Sara", "Kayla", "Walker", 
+    "AJ", "Lester"
 ]
 
 # General Sus Question Templates
@@ -99,21 +100,22 @@ def get_random_team():
     except:
         return "FC Midnight"
 
-# Function to fetch a random Urban Dictionary word
-def get_random_slang():
+# Function to fetch a random gaming character
+def get_random_game_character():
     try:
-        response = requests.get(URBAN_DICTIONARY_API)
+        response = requests.get(GAMING_CHARACTER_API)
         data = response.json()
-        return random.choice(data["list"])["word"]
+        character_list = data["results"]
+        return random.choice(character_list)["name"]
     except:
-        return "Turbo Thrust"  # Fallback word
+        return get_unique_selection(MIDNIGHT_CLUB_CHARACTERS, "characters")  # Fallback
 
 # Function to generate a random challenge
 def generate_challenge():
     options = [
         get_random_car(),
         get_random_team(),
-        get_random_slang(),
+        get_random_game_character(),
         get_unique_selection(MIDNIGHT_CLUB_CHARACTERS, "characters"),
     ]
     random_item = random.choice(options)
@@ -123,7 +125,8 @@ def generate_challenge():
 challenge = generate_challenge()
 data = {
     "content": f"🌈 **Gayest Comment Challenge!** 🌈\n💬 {challenge}\n\n🗳️ **Vote for the best response!** React with 🔥 or 💀.",
-    "username": "Gay Police",
+    "username": "Gay Challenge Bot",  
+    "avatar_url": AVATAR_URL,  
 }
 
 # Send to Discord Webhook
@@ -132,4 +135,4 @@ response = requests.post(WEBHOOK_URL, json=data)
 if response.status_code == 204:
     print("✅ Challenge sent successfully!")
 else:
-    print(f"❌ Failed to send. Status Code: {response.status_code}")
+    print(f"❌ Failed to send. Status Code: {response.status_code} - {response.text}")
