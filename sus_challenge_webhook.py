@@ -5,12 +5,16 @@ import os
 from datetime import datetime, timedelta
 
 # Your Webhook URL (Make sure this is set in GitHub Secrets if using Actions)
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL", "").strip()
+
+if not WEBHOOK_URL:
+    print("❌ ERROR: Webhook URL is missing! Make sure it's set in GitHub Secrets.")
+    exit(1)
 
 ### API Endpoints ###
 CAR_API = "https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json"
 SPORTS_API = "https://www.thesportsdb.com/api/v1/json/1/all_teams.php?s=Soccer"
-GAMING_CHARACTER_API = "https://api.open5e.com/monsters"  # Placeholder (Find a better game character API if needed)
+GAMING_CHARACTER_API = "https://www.giantbomb.com/api/characters/?api_key=62999d7ff68533a50437d8c30157ee5358b4691f&format=json"
 
 # JSON file for tracking past selections
 TRACKING_FILE = "selection_history.json"
@@ -100,7 +104,7 @@ def get_random_team():
     except:
         return "FC Midnight"
 
-# Function to fetch a random gaming character
+# Function to fetch a random gaming character from Giant Bomb API
 def get_random_game_character():
     try:
         response = requests.get(GAMING_CHARACTER_API)
@@ -125,8 +129,7 @@ def generate_challenge():
 challenge = generate_challenge()
 data = {
     "content": f"🌈 **Gayest Comment Challenge!** 🌈\n💬 {challenge}\n\n🗳️ **Vote for the best response!** React with 🔥 or 💀.",
-    "username": "Gay Challenge Bot",  
-    "avatar_url": AVATAR_URL,  
+    "username": "Gay Challenge Bot"
 }
 
 # Send to Discord Webhook
