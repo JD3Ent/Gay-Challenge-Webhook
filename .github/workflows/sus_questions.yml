@@ -1,24 +1,29 @@
 name: Sus Challenge Webhook
 
-on: schedule: - cron: "0 8,20 * * *"  # Runs at 12 AM & 12 PM Pacific Time (UTC-8 & UTC-20) workflow_dispatch:
+on:
+  schedule:
+    - cron: "0 8,20 * * *"  # Runs at 8 AM & 8 PM UTC (12 AM & 12 PM Pacific)
+  workflow_dispatch:  # Allows manual triggering
 
-jobs: send_sus_challenge: runs-on: ubuntu-latest
+jobs:
+  send_sus_challenge:
+    runs-on: ubuntu-latest
 
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-  - name: Send Webhook Message
-    env:
-      WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-    run: |
-      curl -X POST "$WEBHOOK_URL" \
-        -H "Content-Type: application/json" \
-        -d '{
-          "username": "Gay Challenge!", 
-          "avatar_url": "YOUR_NEW_AVATAR_URL_HERE", 
-          "content": "🌈 **Gayest Comment Challenge!** 🌈\n💬 $(python get_challenge.py)\n🗳️ *Vote for the best response!* React with 🔥 or 💀."
-        }'
+      - name: Send Webhook Message
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        run: |
+          curl -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "username": "Gay Challenge!",
+              "avatar_url": "YOUR_NEW_AVATAR_URL_HERE",
+              "content": "🌈 **Gayest Comment Challenge!**"
+            }'
 
-  - name: Wait before exit
-    run: sleep 5
+      - name: Wait before exit
+        run: sleep 5
