@@ -4,22 +4,19 @@ import json
 import os
 from datetime import datetime, timedelta
 
-# Your Webhook URL (Make sure this is set in GitHub Secrets if using Actions)
-WEBHOOK_URL = os.getenv("WEBHOOK_URL", "").strip()
+# Webhook URLs
+DISCORD_WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Discord Webhook from GitHub Secrets
+TEST_WEBHOOK_URL = "https://webhook.site/72442d34-5fed-4e69-ba6a-0f92233568c5"  # For debugging
 
-if not WEBHOOK_URL:
-    print("❌ ERROR: Webhook URL is missing! Make sure it's set in GitHub Secrets.")
-    exit(1)
-
-### API Endpoints ###
+# API Endpoints
 CAR_API = "https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json"
 SPORTS_API = "https://www.thesportsdb.com/api/v1/json/1/all_teams.php?s=Soccer"
-GAMING_CHARACTER_API = "https://www.giantbomb.com/api/characters/?api_key=62999d7ff68533a50437d8c30157ee5358b4691f&format=json"
+GAMING_CHARACTER_API = "https://www.giantbomb.com/api/characters/?api_key=YOUR_GIANTBOMB_API_KEY&format=json"
 
 # JSON file for tracking past selections
 TRACKING_FILE = "selection_history.json"
 
-# Midnight Club Vehicles (Expanded)
+# Midnight Club Vehicles
 MIDNIGHT_CLUB_CARS = [
     "Big Red DUB Escalade", "Black DUB EXT", "DUB Chrysler 300C", "DUB Dodge Magnum",
     "DUB Mercedes-Benz SL55 AMG", "68 Pontiac GTO", "DUB 96 Chevy Impala SS", "Hummer H1",
@@ -48,43 +45,39 @@ QUESTION_TEMPLATES = [
     "Speedrun `{}`. What’s the fastest way to make it sound dirty?",
 ]
 
-# Function to load past selections
+# Load past selections
 def load_selection_history():
     if os.path.exists(TRACKING_FILE):
         with open(TRACKING_FILE, "r") as f:
             return json.load(f)
     return {"cars": {}, "characters": {}}
 
-# Function to save selection history
+# Save selection history
 def save_selection_history(history):
     with open(TRACKING_FILE, "w") as f:
         json.dump(history, f, indent=4)
 
-# Function to get a unique selection
+# Get a unique selection
 def get_unique_selection(category_list, category_key):
     history = load_selection_history()
     used_items = history.get(category_key, {})
 
-    # Filter out items used in the last 30 days
     valid_items = [
         item for item in category_list if item not in used_items or
         datetime.strptime(used_items[item], "%Y-%m-%d") < datetime.now() - timedelta(days=30)
     ]
 
-    # If all items have been used, reset history
     if not valid_items:
         valid_items = category_list
         history[category_key] = {}
 
     selected_item = random.choice(valid_items)
-
-    # Save selection with today's date
     history[category_key][selected_item] = datetime.now().strftime("%Y-%m-%d")
     save_selection_history(history)
 
     return selected_item
 
-# Function to fetch a random car from API
+# Fetch a random car
 def get_random_car():
     try:
         response = requests.get(CAR_API)
@@ -92,9 +85,9 @@ def get_random_car():
         car_list = data["Results"]
         return random.choice(car_list)["Make_Name"]
     except:
-        return get_unique_selection(MIDNIGHT_CLUB_CARS, "cars")  # Fallback
+        return get_unique_selection(MIDNIGHT_CLUB_CARS, "cars")
 
-# Function to fetch a random sports team
+# Fetch a random sports team
 def get_random_team():
     try:
         response = requests.get(SPORTS_API)
@@ -104,17 +97,18 @@ def get_random_team():
     except:
         return "FC Midnight"
 
-# Function to fetch a random gaming character from Giant Bomb API
+# Fetch a random gaming character
 def get_random_game_character():
     try:
-        response = requests.get(GAMING_CHARACTER_API)
+        headers = {"User-Agent": "GayChallengeBot"}
+        response = requests.get(GAMING_CHARACTER_API, headers=headers)
         data = response.json()
         character_list = data["results"]
         return random.choice(character_list)["name"]
     except:
-        return get_unique_selection(MIDNIGHT_CLUB_CHARACTERS, "characters")  # Fallback
+        return get_unique_selection(MIDNIGHT_CLUB_CHARACTERS, "characters")
 
-# Function to generate a random challenge
+# Generate a challenge
 def generate_challenge():
     options = [
         get_random_car(),
@@ -133,9 +127,17 @@ data = {
 }
 
 # Send to Discord Webhook
-response = requests.post(WEBHOOK_URL, json=data)
+if DISCORD_WEBHOOK_URL:
+    discord_response = requests.post(DISCORD_WEBHOOK_URL, json=data)
+    if discord_response.status_code == 204:
+        print("✅ Challenge sent to Discord successfully!")
+    else:
+        print(f"❌ Discord Webhook failed. Status Code: {discord_response.status_code} - {discord_response.text}")
 
-if response.status_code == 204:
-    print("✅ Challenge sent successfully!")
-else:
-    print(f"❌ Failed to send. Status Code: {response.status_code} - {response.text}")
+# Send test message to Webhook.site
+if TEST_WEBHOOK_URL:
+    test_response = requests.post(https://webhook.site/72442d34-5fed-4e69-ba6a-0f92233568c5, json=data)
+    if test_response.status_code == 200:
+        print("✅ Test challenge sent successfully to Webhook.site!")
+    else:
+        print(f"❌ Webhook.site test failed. Status Code: {test_response.status_code} - {test_response.text}")
