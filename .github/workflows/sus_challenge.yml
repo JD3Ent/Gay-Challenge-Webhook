@@ -1,11 +1,11 @@
 name: Sus Challenge Webhook
 
 on:
-  push:  # Runs when any file is pushed to the repository
+  push:
     branches:
-      - main  # Adjust if your branch name is different
+      - main
   schedule:
-    - cron: "0 8,20 * * *"  # Runs at 8 AM & 8 PM UTC (12 AM & 12 PM Pacific)
+    - cron: "0 8,20 * * *"  # Runs at 12 AM & 12 PM Pacific Time (UTC 8 AM & 8 PM)
   workflow_dispatch:  # Allows manual triggering
 
 jobs:
@@ -25,7 +25,7 @@ jobs:
             -d '{
               "username": "Gay Challenge!",
               "avatar_url": "YOUR_NEW_AVATAR_URL_HERE",
-              "content": "🌈 **Gayest Comment Challenge!**"
+              "content": "🌈 **Gayest Comment Challenge!** 💬 '"$(python3 sus_question_generator.py)"'"
             }'
 
       - name: Wait before exit
