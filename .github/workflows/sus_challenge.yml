@@ -1,0 +1,27 @@
+name: Sus Challenge Webhook
+
+on:
+  schedule:
+    - cron: "0 8,20 * * *"  # Runs at 12 AM & 12 PM Pacific Time (converted to UTC)
+  workflow_dispatch:  # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  send_sus_challenge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Sus Challenge Webhook
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python sus_challenge_webhook.py
