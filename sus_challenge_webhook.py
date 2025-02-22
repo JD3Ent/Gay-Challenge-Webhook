@@ -4,17 +4,18 @@ import json
 import os
 from datetime import datetime, timedelta
 
-# Webhook URLs
-DISCORD_WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Discord Webhook from GitHub Secrets
-TEST_WEBHOOK_URL = "https://webhook.site/72442d34-5fed-4e69-ba6a-0f92233568c5"  # For debugging
+# Load API Keys & Webhooks from GitHub Secrets
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Discord Webhook
+TEST_WEBHOOK_URL = os.getenv("TEST_WEBHOOK_URL")  # Webhook.site URL for testing
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")  # Bot token for pinning
+CHANNEL_ID = os.getenv("DISCORD_CHANNEL_ID")  # Discord Channel ID
+HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")  # Hugging Face API Key
+GIANT_BOMB_API_KEY = os.getenv("GIANT_BOMB_API_KEY")  # Giant Bomb API Key
+LAST_CATEGORY_FILE = "last_category.json"  # Stores last used category for cycling
 
-# API Endpoints
-CAR_API = "https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json"
-SPORTS_API = "https://www.thesportsdb.com/api/v1/json/1/all_teams.php?s=Soccer"
-GAMING_CHARACTER_API = "https://www.giantbomb.com/api/characters/?api_key=YOUR_GIANTBOMB_API_KEY&format=json"
-
-# JSON file for tracking past selections
-TRACKING_FILE = "selection_history.json"
+# Hugging Face API for Question Generation
+HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
+HUGGINGFACE_HEADERS = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
 
 # Midnight Club Vehicles
 MIDNIGHT_CLUB_CARS = [
@@ -27,7 +28,7 @@ MIDNIGHT_CLUB_CARS = [
     "Bryston V", "Scneller V8", "Cocotte", "Veloci", "Emu", "71 Bestia", "Smugglers Run Buggie", "SLF"
 ]
 
-# Midnight Club Named Characters
+# Midnight Club Characters
 MIDNIGHT_CLUB_CHARACTERS = [
     "Oscar", "Angel", "Apone", "Moses", "Savo", "Tomoya", "Vince", "Dice", "Gina", "Vito", "Andrew", "Phil",
     "Vanessa", "Brooke", "Lamont", "Carlos", "Bishop", "Kioshi", "Caesar", "Angel", "Leo", 
@@ -36,108 +37,125 @@ MIDNIGHT_CLUB_CHARACTERS = [
     "AJ", "Lester"
 ]
 
-# General Sus Question Templates
-QUESTION_TEMPLATES = [
-    "What’s the most sus thing you can say about `{}`?",
-    "Describe `{}` in the gayest way possible.",
-    "How would `{}` fit into Midnight Club if it was a car mod?",
-    "If `{}` was a character in Midnight Club, what would their backstory be?",
-    "Speedrun `{}`. What’s the fastest way to make it sound dirty?",
-]
+# Function to Get a Funny LGBTQ+ Themed Question
+def generate_funny_question():
+    data = {"inputs": "Give me a funny LGBTQ+ question for a game"}
+    response = requests.post(HUGGINGFACE_API_URL, headers=HUGGINGFACE_HEADERS, json=data)
+    
+    try:
+        result = response.json()
+        return result[0]["generated_text"]
+    except:
+        # Fallback if API fails
+        return random.choice([
+            "What’s the most sus thing you can say about `{}`?",
+            "Describe `{}` in the gayest way possible.",
+            "How would `{}` fit into Midnight Club if it was a car mod?",
+            "If `{}` was a character in Midnight Club, what would their backstory be?",
+            "Speedrun `{}`. What’s the fastest way to make it sound dirty?",
+        ])
 
-# Load past selections
-def load_selection_history():
-    if os.path.exists(TRACKING_FILE):
-        with open(TRACKING_FILE, "r") as f:
-            return json.load(f)
-    return {"cars": {}, "characters": {}}
-
-# Save selection history
-def save_selection_history(history):
-    with open(TRACKING_FILE, "w") as f:
-        json.dump(history, f, indent=4)
-
-# Get a unique selection
-def get_unique_selection(category_list, category_key):
-    history = load_selection_history()
-    used_items = history.get(category_key, {})
-
-    valid_items = [
-        item for item in category_list if item not in used_items or
-        datetime.strptime(used_items[item], "%Y-%m-%d") < datetime.now() - timedelta(days=30)
-    ]
-
-    if not valid_items:
-        valid_items = category_list
-        history[category_key] = {}
-
-    selected_item = random.choice(valid_items)
-    history[category_key][selected_item] = datetime.now().strftime("%Y-%m-%d")
-    save_selection_history(history)
-
-    return selected_item
-
-# Fetch a random car
+# Function to Fetch a Random Car
 def get_random_car():
-    try:
-        response = requests.get(CAR_API)
-        data = response.json()
-        car_list = data["Results"]
-        return random.choice(car_list)["Make_Name"]
-    except:
-        return get_unique_selection(MIDNIGHT_CLUB_CARS, "cars")
+    return random.choice(MIDNIGHT_CLUB_CARS)
 
-# Fetch a random sports team
-def get_random_team():
-    try:
-        response = requests.get(SPORTS_API)
-        data = response.json()
-        teams = data["teams"]
-        return random.choice(teams)["strTeam"]
-    except:
-        return "FC Midnight"
+# Function to Fetch a Random Midnight Club Character
+def get_random_mc_character():
+    return random.choice(MIDNIGHT_CLUB_CHARACTERS)
 
-# Fetch a random gaming character
+# Function to Fetch a Random Gaming Character
 def get_random_game_character():
     try:
         headers = {"User-Agent": "GayChallengeBot"}
-        response = requests.get(GAMING_CHARACTER_API, headers=headers)
+        response = requests.get(f"https://www.giantbomb.com/api/characters/?api_key={GIANT_BOMB_API_KEY}&format=json", headers=headers)
         data = response.json()
         character_list = data["results"]
         return random.choice(character_list)["name"]
     except:
-        return get_unique_selection(MIDNIGHT_CLUB_CHARACTERS, "characters")
+        return "Captain Falcon"  # Fallback character
 
-# Generate a challenge
-def generate_challenge():
-    options = [
-        get_random_car(),
-        get_random_team(),
-        get_random_game_character(),
-        get_unique_selection(MIDNIGHT_CLUB_CHARACTERS, "characters"),
-    ]
-    random_item = random.choice(options)
-    return random.choice(QUESTION_TEMPLATES).format(random_item)
+# Function to Determine Next Category in Cycle
+def get_next_category():
+    categories = ["car", "mc_character", "game_character"]
 
-# Create the message
-challenge = generate_challenge()
-data = {
-    "content": f"🌈 **Gayest Comment Challenge!** 🌈\n💬 {challenge}\n\n🗳️ **Vote for the best response!** React with 🔥 or 💀.",
-    "username": "Gay Challenge Bot"
-}
-
-# Send to Discord Webhook
-if DISCORD_WEBHOOK_URL:
-    discord_response = requests.post(DISCORD_WEBHOOK_URL, json=data)
-    if discord_response.status_code == 204:
-        print("✅ Challenge sent to Discord successfully!")
+    if not os.path.exists(LAST_CATEGORY_FILE):
+        last_category = None
     else:
-        print(f"❌ Discord Webhook failed. Status Code: {discord_response.status_code} - {discord_response.text}")
+        with open(LAST_CATEGORY_FILE, "r") as f:
+            last_category = json.load(f).get("last_category")
 
-# Send test message to Webhook.site
-if TEST_WEBHOOK_URL:
-    test_response = requests.post("https://webhook.site/72442d34-5fed-4e69-ba6a-0f92233568c5", json=data)
-    if test_response.status_code == 200:
+    # Determine next category
+    if last_category not in categories:
+        next_category = categories[0]  # Start from the first category if no valid history
+    else:
+        current_index = categories.index(last_category)
+        next_category = categories[(current_index + 1) % len(categories)]  # Cycle to next
+
+    # Save new category
+    with open(LAST_CATEGORY_FILE, "w") as f:
+        json.dump({"last_category": next_category}, f)
+
+    return next_category
+
+# Function to Generate Full Challenge
+def generate_challenge():
+    category = get_next_category()
+
+    if category == "car":
+        subject = get_random_car()
+    elif category == "mc_character":
+        subject = get_random_mc_character()
+    else:
+        subject = get_random_game_character()
+
+    question_template = generate_funny_question()
+    return question_template.format(subject)
+
+# Function to Send Challenge to Webhook
+def send_challenge():
+    challenge = generate_challenge()
+    data = {
+        "content": f"🌈 **Gayest Comment Challenge!** 🌈\n💬 {challenge}\n\n🗳️ **Vote for the best response!** React with 🔥 or 💀.",
+        "username": "Gay Challenge Bot"
+    }
+
+    # Send to Discord Webhook
+    response = requests.post(WEBHOOK_URL, json=data)
+    if response.status_code == 204:
+        print("✅ Challenge sent successfully to Discord!")
+    else:
+        print(f"❌ Failed to send. Status Code: {response.status_code} - {response.text}")
+
+    # Send to Test Webhook (webhook.site)
+    test_response = requests.post(TEST_WEBHOOK_URL, json=data)
+    if test_response.status_code == 204:
         print("✅ Test challenge sent successfully to Webhook.site!")
     else:
-        print(f"❌ Webhook.site test failed. Status Code: {test_response.status_code} - {test_response.text}")
+        print(f"❌ Failed to send test message. Status Code: {test_response.status_code} - {test_response.text}")
+
+    return response.json() if response.status_code == 200 else None
+
+# Function to Pin Message in Discord
+def pin_message(message_id):
+    url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/pins/{message_id}"
+    headers = {
+        "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.put(url, headers=headers)
+    
+    if response.status_code == 204:
+        print("📌 Message pinned successfully!")
+    else:
+        print(f"❌ Failed to pin message. Status Code: {response.status_code} - {response.text}")
+
+# Execute the Workflow
+message_response = send_challenge()
+
+# If message was sent, extract ID and pin it
+if message_response and "id" in message_response:
+    message_id = message_response["id"]
+    pin_message(message_id)
+else:
+    print("⚠️ Message ID not found. Unable to pin.")
