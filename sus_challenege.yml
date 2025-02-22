@@ -1,0 +1,25 @@
+name: Sus Challenge Webhook
+
+on:
+  schedule:
+    - cron: "0 8 * * *"  # Runs at 12:00 AM PST (08:00 AM UTC)
+    - cron: "0 20 * * *"  # Runs at 12:00 PM PST (08:00 PM UTC)
+  workflow_dispatch:
+
+jobs:
+  run_script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Sus Challenge Webhook
+        run: python sus_challenge_webhook.py
