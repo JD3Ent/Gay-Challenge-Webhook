@@ -3,7 +3,7 @@ import random
 import os
 import logging
 
-# Configure logging for debugging
+# Configure logging for debug
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Load environment variables
