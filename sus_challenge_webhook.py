@@ -35,7 +35,6 @@ MIDNIGHT_CLUB_CHARACTERS = [
     "Trust Fund Baby From MC2", "Hector", "The City Champs", "Andrew", "Roy", "Annie",
     "Fernando", "Karol", "Doc", "Baby-T", "Yo-Yo", "Nails", "Arnie", "Rachel", "Sara", "Kayla", "Walker", 
     "AJ", "Lester"
-
 ]
 
 CATEGORY_LIST = ["car", "midnight_character", "game_character"]
@@ -54,6 +53,7 @@ def load_questions(file_path):
 # Load all predefined questions at startup
 PREDEFINED_QUESTIONS = load_questions("questions.txt")
 CROSSOVER_QUESTIONS = load_questions("crossover.txt")
+CAR_SPECIFIC_QUESTIONS = load_questions("cars.txt")
 
 ROTATION_INDEX = 0  # Used to rotate categories
 
@@ -110,13 +110,22 @@ def generate_funny_question(subject, category):
         # Fallback if no crossover questions are available
         return f"What would happen if {subject} met {mc_character} in Midnight Club?"
 
-    # For other categories, randomly pick from predefined questions
-    if PREDEFINED_QUESTIONS:
-        template = random.choice(PREDEFINED_QUESTIONS)
-        return template.format(subject)
-    
-    # Fallback if no predefined questions are available
-    return f"Describe something sus about {subject}."
+    elif category == "car":
+        # Use car-specific templates for cars
+        if CAR_SPECIFIC_QUESTIONS:
+            template = random.choice(CAR_SPECIFIC_QUESTIONS)
+            return template.format(subject)
+        
+        # Fallback if no car-specific questions are available
+        return f"Describe something sus about the car {subject}."
+
+    else:  # For midnight_character or others, use general predefined questions
+        if PREDEFINED_QUESTIONS:
+            template = random.choice(PREDEFINED_QUESTIONS)
+            return template.format(subject)
+        
+        # Fallback if no predefined questions are available
+        return f"Describe something sus about {subject}."
 
 # Function to generate the challenge message
 def generate_challenge():
