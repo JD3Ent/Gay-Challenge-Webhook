@@ -55,7 +55,10 @@ PREDEFINED_QUESTIONS = load_questions("questions.txt")
 CROSSOVER_QUESTIONS = load_questions("crossover.txt")
 CAR_SPECIFIC_QUESTIONS = load_questions("cars.txt")
 
-ROTATION_INDEX = 0  # Used to rotate categories
+import random
+
+# Initialize ROTATION_INDEX with a random starting value
+ROTATION_INDEX = random.randint(0, len(CATEGORY_LIST) - 1)
 
 # Function to fetch a random car
 def get_random_car():
