@@ -11,6 +11,9 @@ on:
 jobs:
   send_sus_challenge:
     runs-on: ubuntu-latest
+    concurrency:  # Prevents duplicate runs
+      group: sus-challenge-webhook
+      cancel-in-progress: true
 
     steps:
       - name: Checkout repository
