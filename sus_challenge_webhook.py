@@ -166,18 +166,38 @@ def send_challenge():
         else:
             logging.error(f"Failed to send challenge. Status Code: {response.status_code}, Response: {response.text}")
         
-         # Send test webhook (for debugging)
-         test_response = requests.post(TEST_WEBHOOK_URL, json=data)
-         
-         if test_response.status_code == 204:
-             logging.info("Test challenge sent successfully!")
-         else:
-             logging.error(f"Failed to send test challenge. Status Code: {test_response.status_code}, Response: {test_response.text}")
+        # Send test webhook (for debugging)
+        test_response = requests.post(TEST_WEBHOOK_URL, json=data)
+        
+        if test_response.status_code == 204:
+            logging.info("Test challenge sent successfully!")
+        else:
+            logging.error(f"Failed to send test challenge. Status Code: {test_response.status_code}, Response: {test_response.text}")
 
-     except Exception as e:
-         logging.error(f"Error sending challenge to Discord: {e}")
+    except Exception as e:
+        logging.error(f"Error sending challenge to Discord: {e}")
 
 # Function to pin a message in Discord using the bot token and channel ID
 def pin_message(message_id):
-     url
+    url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/pins/{message_id}"
+    
+    headers = {
+        "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    try:
+        response = requests.put(url, headers=headers)
+        
+        if response.status_code == 204:
+            logging.info("Message pinned successfully!")
+        else:
+            logging.error(f"Failed to pin message. Status Code: {response.status_code}, Response: {response.text}")
+    
+    except Exception as e:
+        logging.error(f"Error pinning message: {e}")
+
+# Main execution workflow (keeps pinning logic intact)
+if __name__ == "__main__":
+   send_challenge()
     
