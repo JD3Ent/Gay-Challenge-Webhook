@@ -88,7 +88,7 @@ def generate_challenge():
     challenge_message_content = (
         f"🌈 **Sus Comment Challenge!** 🌈\n\n"
         f"💬 **{question}**\n\n"
-        f"🗳️ **Vote for the best reply <@&123456789012345678>!** React with 🏳️‍🌈 or 💀 for Gayest Or Token Straightest response!"
+        f"🗳️ **Vote for the best reply <@&1343147761595449374>!** React with 🏳️‍🌈 or 💀 for Gayest Or Token Straightest response!"
     )
     
     return challenge_message_content
