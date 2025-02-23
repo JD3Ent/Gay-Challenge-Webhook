@@ -93,7 +93,15 @@ def generate_funny_question(subject, category):
 def generate_challenge():
     subject, category = get_random_subject()
     question = generate_funny_question(subject, category)
-    return question
+    
+    # Add emojis and formatting for better layout
+    challenge_message_content = (
+        f"🌈 **Sus Comment Challenge!** 🌈\n\n"
+        f"💬 **{question}**\n\n"
+        f"🗳️ **Vote for the best response!** React with 🏳️‍🌈 (SUPER GAY) or 💀 (TOKEN STRAIGHT LOL)."
+    )
+    
+    return challenge_message_content
 
 # Function to load the last message ID from file
 def load_last_message_id():
@@ -158,7 +166,7 @@ def pin_message(message_id):
     }
 
     try:
-        print(f"Attempting to pin message with ID: {message_id}")  # Debugging
+        print(f"Attempting to pin message with ID: {message_id}")
         response = requests.put(url, headers=headers)
 
         if response.status_code == 204:
@@ -181,41 +189,41 @@ def send_challenge():
         if token_straight_user_id:
             winner_message_parts.append(f"<@{token_straight_user_id}> was the token straight one! 💀")
 
-        winner_announcement = "\n".join(winner_message_parts)
-        data_winner_announcement = {"content": winner_announcement}
+        winner_announcement_content = "\n".join(winner_message_parts)
+        
+        data_winner_announcement = {"content": winner_announcement_content}
         
         response_winner_announcement = requests.post(WEBHOOK_URL, json=data_winner_announcement)
         
         print("Winner announcement sent!" if response_winner_announcement.ok else response_winner_announcement.text)
 
-    # Generate new challenge message dynamically
+    # Generate new challenge message dynamically with proper formatting
     challenge_message_content = generate_challenge()
     
-    data_new_challenge = {"content": challenge_message_content}
+    data_new_challenge_content={"content":challenge_message_content}
     
     try:
         # Send new challenge message
-        response_new_challenge = requests.post(WEBHOOK_URL, json=data_new_challenge)
+        response_new_challenge=requests.post(WEBHOOK_URL,json=data_new_challenge_content)
 
         if response_new_challenge.status_code == 200 or response_new_challenge.status_code == 204:
             print("Challenge sent successfully!")
             
             # Extract message ID and save it for future reference
-            message_response_json = response_new_challenge.json()
-            message_id_new_challenge = message_response_json.get("id")
+            message_response_json=response_new_challenge.json()
+            new_message_id=message_response_json.get("id")
             
-            if message_id_new_challenge:
-                save_last_message_id(message_id_new_challenge)
-                print(f"Message ID saved: {message_id_new_challenge}")
-                
-                # Pin the new challenge message
-                pin_message(message_id_new_challenge)
+            save_last_message_id(new_message_id)
 
-                # Send test webhook (for debugging purposes)
-                test_data_content={"content":f"[TEST] Sent: {challenge_message_content}"}
-                test_response = requests.post(TEST_WEBHOOK_URL, json=test_data_content)
+            # Pin the new challenge message
+            pin_message(new_message_id)
 
-                print("Test challenge sent successfully!" if test_response.ok else test_response.text)
+            # Send test webhook (for debugging purposes)
+            test_data={"content":f"[TEST] 🌈 Test Sus Comment Challenge Sent!\n💬 {challenge_message_content}"}
+            
+            test_response=requests.post(TEST_WEBHOOK_URL,json=test_data)
+
+            print("Test webhook sent!" if test_response.ok else test_response.text)
 
         
         else:
@@ -227,4 +235,3 @@ def send_challenge():
 # Main execution workflow
 if __name__ == "__main__":
    send_challenge()
-    
