@@ -10,7 +10,13 @@ Citi Turbo
 Emu 
 Monsoni
 Interna
-Veloci 
+Veloci
+Lusso XT
+Schneller V8
+Bryston V
+Cocotte
+SLF
+Smugglers Run Buggy
 Saikou 
 Saikou XS 
 Torque JX 
@@ -28,6 +34,18 @@ Black DUB EXT
 Cadillac CTS-V
 Cadillac Escalade EXT
 Cadillac Escalade EXT DUB Edition
+Cadillac Sixteen 2003
+Cadillac Cien 2001
+99 Dodge Charger R/T Concept
+Bugatti Veyron 2005
+McLaren F1 LM
+64 Impala
+Training Day 78 Monte Carlo
+69 Pymouth Netcoder
+H2 
+2006 Dodge Magnum R/T
+Super 8 Pitty
+Chevrolet Super Super Rancid (SSR)
 Chevrolet Bel Air 1955
 Chevrolet Bel Air 1957
 Chevrolet Camaro Z28 1981
@@ -54,24 +72,24 @@ Lamborghini Murciélago Coupe AWD 2004
 Lexus GS430 Sedan VIP Style DUB Edition 2006
 Lincoln Navigator SUV AWD DUB Edition 2006
 Mazda RX-7 Spirit R Type-A FD3S Coupe RWD 2002
-Mazda RX-8 Coupe RWD Renesis Engine 2005 
+Mazda RX-8 Coupe RWD 2005 
 Mercedes-Benz CL55 AMG Coupe RWD VIP Style DUB Edition 2005 
 Mercedes-Benz SL55 AMG Convertible DUB Edition 
-Mitsubishi Eclipse GSX AWD Tuner Coupe 
+Mitsubishi Eclipse GSX AWD Coupe 
 Mitsubishi Lancer Evolution VIII MR AWD Sedan 
-Nissan Skyline GT-R R34 AWD Tuner Icon 
+Nissan Skyline GT-R R34 AWD  
 Pagani Zonda C12 S Coupe Hypercar 
-Plymouth Road Runner Hemi Muscle Car Classic 
-Pontiac GTO Judge Muscle Car Classic 
+Plymouth Road Runner Hemi  
+70 Pontiac GTO Judge 
 Saleen Mustang S281 Supercharged  
 Saleen S7 Twin Turbo
-Toyota Supra MKIV Turbo Tuner Coupe Iconic 
+Toyota Supra MKIV Turbo 
 Volkswagen Golf GTI MK4 Hatchback 
-Volkswagen Jetta GLI Sedan Tuner Iconic 
-Yamaha YZF-R1 Superbike Legend 
-Suzuki GSX-R1000 Superbike Legend 
-Acura Integra LS Hatchback Tuner Iconic 
-Audi R8 V10 AWD Exotic Modern Supercar 
+Volkswagen Jetta GLI Sedan 
+Yamaha YZF-R1 
+Suzuki GSX-R1000 
+Acura Integra LS Hatchback 
+Audi R8 V10 AWD 
 Audi RS4 Avant Wagon AWD 
 Bentley Continental Supersport
 BMW M3 E92 Coupe  
@@ -93,7 +111,7 @@ Chevrolet Impala SS 1996
 Chevrolet Nova SS 1969 
 Dodge Challenger R/T 1970 
 Dodge Charger Daytona Hemi 1969 
-Dodge Charger SRT8 Super Bee 2007 
+Dodge Charger SRT8 Super Bee 2007
 Ferrari Enzo Ferrari 
 Ferrari F430 Scuderia Coupe 
 Ford Mustang Boss 302 1969 
@@ -107,4 +125,4 @@ Nissan Skyline GT-R R32 V-Spec II 1994
 Porsche Carrera GT 2004 
 Porsche Cayman S 987c Coupe 2008 
 Volkswagen Beetle RSI AWD Tuner Edition 2001
-Volkswagen Jetta GLI Mk5 Sedan Tuner Edition 2006
+Volkswagen Jetta GLI Mk5 Sedan 2006
