@@ -1,5 +1,55 @@
-"Oscar", "Angel", "Apone", "Moses", "Savo", "Tomoya", "Vince", "Dice", "Gina", "Vito", "Andrew", "Phil",
-    "Vanessa", "Brooke", "Lamont", "Carlos", "Bishop", "Kioshi", "Caesar", "Angel", "Leo", 
-    "Trust Fund Baby From MC2", "Hector", "The City Champs", "Andrew", "Roy", "Annie",
-    "Fernando", "Karol", "Doc", "Baby-T", "Yo-Yo", "Nails", "Arnie", "Rachel", "Sara", "Kayla", "Walker", 
-    "AJ", "Lester"
+Oscar
+Angel
+Apone
+Moses
+Savo
+Tomoya
+Vince
+Dice
+Gina
+Vito
+Andrew
+Phil
+Vanessa
+Brooke
+Lamont
+Carlos
+Bishop
+Kioshi
+Caesar
+Angel
+Leo
+Trust Fund Baby From MC2
+Hector
+The City Champs
+Andrew
+Roy
+Annie
+Fernando
+Karol
+Doc 
+Baby-T
+Yo-Yo
+Nails 
+Arnie
+Rachel
+Sara
+Kayla
+Walker
+AJ
+Lester
+Mohammad
+Kareem
+Jamal
+Stefan
+Anastasia
+Vlad
+Akira
+Sato
+Stephane 
+Julie
+Parfait 
+Nikko 
+Zen 
+Makoto 
+Koji 
