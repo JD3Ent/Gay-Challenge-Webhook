@@ -3,7 +3,7 @@ import random
 import os
 import logging
 
-# Configure logging for debug
+# Configure logging for debugging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Load environment variables
@@ -189,42 +189,45 @@ def send_challenge():
     }
 
     try:
-        response = requests.post(WEBHOOK_URL, json=data)
-        
-        if response.status_code == 200:
-            message_response = response.json()
-            message_id = message_response.get("id")
-            
-            if message_id:
-                with open(LAST_MESSAGE_ID_FILE, 'w') as f:
-                    f.write(message_id)  # Save the last message ID
-            
-                pin_message(message_id)  # Pin the message
-            
-            logging.info("Challenge sent successfully!")
-        
-        else:
-            logging.error(f"Failed to send challenge. Status Code: {response.status_code}, Response: {response.text}")
+         # Send message to Discord Webhook and store message ID for reactions later
+         response = requests.post(WEBHOOK_URL, json=data)
+
+         if response.status_code == 200:
+             message_response = response.json()
+             message_id = message_response.get("id")
+             
+             if message_id:
+                 with open(LAST_MESSAGE_ID_FILE, 'w') as f:
+                     f.write(message_id)  # Save the last message ID
+                
+                 pin_message(message_id)  # Pin the message
+                
+             logging.info("Challenge sent successfully!")
+         
+         else:
+             logging.error(f"Failed to send challenge. Status Code: {response.status_code}, Response: {response.text}")
 
          # Calculate reactions before sending next question.
          gayest_user_id, token_straight_user_id = calculate_reactions()
-         
+
          mention_messages = []
-         
-         if gayest_user_id:
+
+         if gayest_user_id is not None and token_straight_user_id is not None:
              mention_messages.append(f"<@{gayest_user_id}> you were the gayest of all for that last question! 🌈")
-         
-         if token_straight_user_id:
              mention_messages.append(f"<@{token_straight_user_id}> you were the token straight one in the server! 💀")
          
-         if mention_messages:
+         if mention_messages: 
              mentions_content = "\n".join(mention_messages)
              requests.post(WEBHOOK_URL, json={"content": mentions_content})
 
          # Send test webhook (for debugging)
-         test_response = requests.post(TEST_WEBHOOK_URL, json=data)
+         test_response_data = {
+             "content": f"[TEST] 🌈 **Sus Comment Challenge!** 🌈\n💬 {challenge_message}",
+             "username": "Test Sus Challenge Bot"
+         }
+         test_response = requests.post(TEST_WEBHOOK_URL, json=test_response_data)
 
-         if test_response.status_code == 204:
+         if test_response.status_code == 204 or test_response.ok:
              logging.info("Test challenge sent successfully!")
          else:
              logging.error(f"Failed to send test challenge. Status Code: {test_response.status_code}, Response: {test_response.text}")
@@ -243,16 +246,16 @@ def pin_message(message_id):
 
      try:
          response = requests.put(url, headers=headers)
-         
+
          if response.status_code == 204:
              logging.info("Message pinned successfully!")
          else:
              logging.error(f"Failed to pin message. Status Code: {response.status_code}, Response: {response.text}")
-     
+
      except Exception as e:
          logging.error(f"Error pinning message: {e}")
 
 # Main execution workflow (keeps pinning logic intact)
 if __name__ == "__main__":
    send_challenge()
-    
+        
