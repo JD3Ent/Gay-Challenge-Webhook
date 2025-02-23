@@ -73,7 +73,7 @@ def get_random_midnight_character():
 def get_random_game_character():
     try:
         headers = {"User-Agent": "SusChallengeBot"}
-        response = requests.get(GAMING_CHARACTER_API, headers=headers)
+        response = requests.get(GIANTBOMB_API_KEY, headers=headers)
         data = response.json()
 
         if data.get("results"):
@@ -206,19 +206,6 @@ def send_challenge():
          
          else:
              logging.error(f"Failed to send challenge. Status Code: {response.status_code}, Response: {response.text}")
-
-         # Calculate reactions before sending next question.
-         gayest_user_id, token_straight_user_id = calculate_reactions()
-
-         mention_messages = []
-
-         if gayest_user_id is not None and token_straight_user_id is not None:
-             mention_messages.append(f"<@{gayest_user_id}> you were the gayest of all for that last question! 🌈")
-             mention_messages.append(f"<@{token_straight_user_id}> you were the token straight one in the server! 💀")
-         
-         if mention_messages: 
-             mentions_content = "\n".join(mention_messages)
-             requests.post(WEBHOOK_URL, json={"content": mentions_content})
 
          # Send test webhook (for debugging)
          test_response_data = {
