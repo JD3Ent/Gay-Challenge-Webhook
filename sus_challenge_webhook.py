@@ -33,7 +33,8 @@ CROSSOVER_QUESTIONS = load_data(CROSSOVER_FILE)
 CAR_SPECIFIC_QUESTIONS = load_data(CAR_SPECIFIC_FILE)
 
 CATEGORY_LIST = ["car", "midnight_character"]
-ROTATION_INDEX = 0  # Used to rotate categories
+
+ROTATION_INDEX = (len(CATEGORY_LIST) + 1) % len(CATEGORY_LIST) # Used to rotate categories
 
 # Function to fetch a random car
 def get_random_car():
