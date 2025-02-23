@@ -11,12 +11,7 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Discord Webhook
 TEST_WEBHOOK_URL = os.getenv("TEST_WEBHOOK_URL")  # Webhook.site URL for testing
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")  # Bot token for pinning
 CHANNEL_ID = os.getenv("DISCORD_CHANNEL_ID")  # Discord Channel ID
-HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")  # Hugging Face API Key
 GIANTBOMB_API_KEY = os.getenv("GIANTBOMB_API_KEY")  # Giant Bomb API Key
-
-# Hugging Face API Config
-HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/gpt2"
-HUGGINGFACE_HEADERS = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
 
 # Giant Bomb API Config
 GAMING_CHARACTER_API = f"https://www.giantbomb.com/api/characters/?api_key={GIANTBOMB_API_KEY}&format=json"
@@ -40,35 +35,25 @@ MIDNIGHT_CLUB_CHARACTERS = [
     "Trust Fund Baby From MC2", "Hector", "The City Champs", "Andrew", "Roy", "Annie",
     "Fernando", "Karol", "Doc", "Baby-T", "Yo-Yo", "Nails", "Arnie", "Rachel", "Sara", "Kayla", "Walker", 
     "AJ", "Lester"
+
 ]
 
 CATEGORY_LIST = ["car", "midnight_character", "game_character"]
 
-QUESTION_TEMPLATES = {
-    # Templates for fallback if AI fails or validation fails
-    "car": [
-        "{} just got a custom rainbow spoiler. What’s the most sus thing it could say about itself?",
-        "{} is now the official car of a pride parade. How would it seduce the crowd?",
-        "{} just got caught in a back alley doing something suspicious. What was it?",
-        "{} has a secret compartment filled with... what? Make it as sus as possible.",
-        "{} is now a contestant on RuPaul's Drag Race: Vehicle Edition. What’s its drag name?",
-    ],
-    "midnight_character": [
-        "{} just confessed their wildest hookup story at midnight. What happened, and why is everyone blushing?",
-        "{} is hosting a pride afterparty. What’s the most scandalous thing they’d do to entertain their guests?",
-        "{} got caught sneaking out of someone else’s garage at 3 AM. What were they doing in there?",
-        "{} is now starring in a gay romance movie. What’s the most dramatic scene they’d be in?",
-        "{} just entered a drag competition. What’s their stage name, and what’s their signature move?",
-    ],
-    # Special templates for game character + Midnight Club character crossovers
-    "game_character": [
-        "{} just met {} in a Midnight Club game. Who would win in the most ridiculous street race ever?",
-        "{} and {} are teaming up for a heist in Midnight Club. What’s their plan, and how does it go wrong?",
-        "{} challenged {} to a dance-off at a pride parade. Who wins, and what’s their signature move?",
-        "{} and {} are stuck in traffic together. What’s the most sus conversation they’d have?",
-        "{} just stole {}’s car in Midnight Club. How does the chase end, and who gets away with what?",
-    ],
-}
+# Load questions from an external file
+def load_questions(file_path):
+    try:
+        with open(file_path, 'r') as f:
+            questions = [line.strip() for line in f if line.strip()]
+            logging.info(f"Loaded {len(questions)} questions from {file_path}")
+            return questions
+    except Exception as e:
+        logging.error(f"Error loading questions from {file_path}: {e}")
+        return []
+
+# Load all predefined questions at startup
+PREDEFINED_QUESTIONS = load_questions("questions.txt")
+CROSSOVER_QUESTIONS = load_questions("crossover.txt")
 
 ROTATION_INDEX = 0  # Used to rotate categories
 
@@ -111,76 +96,27 @@ def get_random_subject():
     ROTATION_INDEX = (ROTATION_INDEX + 1) % len(CATEGORY_LIST)  # Move to next category
     return subject, category
 
-# Function to validate AI-generated questions
-def validate_question(question, subject):
-    """
-    Validate if the generated question makes sense.
-    - Ensure it's not too short or too long.
-    - Ensure it contains the subject.
-    """
-    if len(question) < 10 or len(question) > 200:
-        logging.warning(f"Validation failed: Question length out of bounds ({len(question)} characters).")
-        return False
-    
-    if subject not in question:
-        logging.warning(f"Validation failed: Subject '{subject}' not found in question.")
-        return False
-
-    return True
-
-# Function to generate funny questions using Hugging Face GPT-2 API or fallback templates
+# Function to generate funny questions using predefined or crossover templates
 def generate_funny_question(subject, category):
     if category == "game_character":
         # Pick another random Midnight Club character for crossover questions
         mc_character = get_random_midnight_character()
         
         # Use crossover templates specifically for game characters + MC characters
-        template = random.choice(QUESTION_TEMPLATES["game_character"])
-        return template.format(subject, mc_character)
-    
-    prompt = f"Generate a funny LGBTQ+ or sus question about a {category}: {subject}."
-    
-    payload = {
-        "inputs": prompt,
-        # Add parameters for better control over generation
-        # Lower temperature for less randomness, limit max_length to prevent verbosity
-        # Top_k/top_p to control sampling diversity
-        "parameters": {
-            "temperature": 0.7,
-            "max_length": 50,
-            "top_k": 50,
-            "top_p": 0.9,
-            # Avoid repetition by penalizing repeated sequences
-            "repetition_penalty": 1.2,
-        },
-        # Options to ensure clean outputs (e.g., no unfinished sentences)
-        "options": {"use_cache": True, "wait_for_model": True},
-    }
+        if CROSSOVER_QUESTIONS:
+            template = random.choice(CROSSOVER_QUESTIONS)
+            return template.format(subject, mc_character)
+        
+        # Fallback if no crossover questions are available
+        return f"What would happen if {subject} met {mc_character} in Midnight Club?"
 
-    try:
-        response = requests.post(HUGGINGFACE_API_URL, headers=HUGGINGFACE_HEADERS, json=payload)
-        
-        if response.status_code != 200:
-            raise ValueError(f"API returned non-200 status code: {response.status_code}")
-        
-        result = response.json()
-        
-        if isinstance(result, dict) and result.get("generated_text"):
-            generated_question = result["generated_text"]
-            logging.info(f"AI Response: {generated_question}")
-            
-            # Validate the generated question
-            if validate_question(generated_question, subject):
-                return generated_question
-        
-        raise ValueError("Unexpected API response format or validation failed.")
-    
-    except Exception as e:
-        logging.error(f"Hugging Face API Error: {e}")
-        
-        # Fallback to predefined templates if AI fails or validation fails
-        template = random.choice(QUESTION_TEMPLATES[category])
+    # For other categories, randomly pick from predefined questions
+    if PREDEFINED_QUESTIONS:
+        template = random.choice(PREDEFINED_QUESTIONS)
         return template.format(subject)
+    
+    # Fallback if no predefined questions are available
+    return f"Describe something sus about {subject}."
 
 # Function to generate the challenge message
 def generate_challenge():
