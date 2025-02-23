@@ -83,11 +83,14 @@ def generate_challenge():
     subject, category = get_random_subject()
     question = generate_funny_question(subject, category)
     
-    # Add emojis and formatting for better layout
+    # Replace ROLE_ID with the actual ID of the "Gay Challengers" role
+    role_mention = "<@&123456789012345678>"  # Example role ID
+    
+    # Add emojis, formatting, and the role mention
     challenge_message_content = (
-        f"🌈 **Sus Comment Challenge!** 🌈\n\n"
+        f"{role_mention} 🌈 **Sus Comment Challenge!** 🌈\n\n"
         f"💬 **{question}**\n\n"
-        f"🗳️ **Vote for the best response <@1343147761595449374>!** React with 🏳️‍🌈 or 💀 for Gayest Or Straightest Replies!"
+        f"🗳️ **Vote for the best reply!** React with 🏳️‍🌈 or 💀 for Gayest Or Token Straightest response!"
     )
     
     return challenge_message_content
