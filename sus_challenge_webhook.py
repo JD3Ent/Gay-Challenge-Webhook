@@ -5,10 +5,13 @@ import os
 # Load environment variables
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Discord Webhook
 TEST_WEBHOOK_URL = os.getenv("TEST_WEBHOOK_URL")  # Webhook.site URL for testing
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")  # Bot token for pinning messages
+CHANNEL_ID = os.getenv("DISCORD_CHANNEL_ID")  # Discord Channel ID
 
 # File paths for external data
 MC_CARS_FILE = "mc_cars.txt"
 MC_CHARACTERS_FILE = "mc_characters.txt"
+LAST_MESSAGE_ID_FILE = "last_message_id.txt"
 
 # Load data from an external file
 def load_data(file_path):
@@ -92,6 +95,26 @@ def generate_challenge():
     question = generate_funny_question(subject, category)
     return question
 
+# Function to pin a message in Discord using the bot token and channel ID
+def pin_message(message_id):
+    url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/pins/{message_id}"
+    
+    headers = {
+        "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    try:
+        response = requests.put(url, headers=headers)
+
+        if response.status_code == 204:
+            print("Message pinned successfully!")
+        else:
+            print(f"Failed to pin message. Status Code: {response.status_code}, Response: {response.text}")
+
+    except Exception as e:
+        print(f"Error pinning message: {e}")
+
 # Function to send the challenge to Discord Webhook and test Webhook
 def send_challenge():
     challenge_message = generate_challenge()
@@ -102,11 +125,23 @@ def send_challenge():
     }
 
     try:
-        # Send message to Discord Webhook
+        # Send message to Discord Webhook and store message ID for reactions later
         response = requests.post(WEBHOOK_URL, json=data)
 
         if response.status_code == 200 or response.status_code == 204:
             print("Challenge sent successfully!")
+            
+            # Extract message ID and save it for pinning later
+            message_response = response.json()
+            message_id = message_response.get("id")
+            
+            if message_id:
+                with open(LAST_MESSAGE_ID_FILE, 'w') as f:
+                    f.write(message_id)  # Save the last message ID
+                
+                # Pin the message in Discord
+                pin_message(message_id)
+        
         else:
             print(f"Failed to send challenge. Status Code: {response.status_code}, Response: {response.text}")
 
