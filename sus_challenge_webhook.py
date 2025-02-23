@@ -6,21 +6,20 @@ from datetime import datetime, timedelta
 
 # Load API Keys & Webhooks from GitHub Secrets
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Discord Webhook
-TEST_WEBHOOK_URL = os.getenv("TEST_WEBHOOK_URL")  # Webhook.site for debugging
+TEST_WEBHOOK_URL = os.getenv("TEST_WEBHOOK_URL")  # Webhook.site URL for testing
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")  # Bot token for pinning
 CHANNEL_ID = os.getenv("DISCORD_CHANNEL_ID")  # Discord Channel ID
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")  # Hugging Face API Key
-GIANT_BOMB_API_KEY = os.getenv("GIANT_BOMB_API_KEY")  # Giant Bomb API Key
+GIANTBOMB_API_KEY = os.getenv("GIANTBOMB_API_KEY")  # Giant Bomb API Key
 
-# API Endpoints
-HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
+# Hugging Face API for Better Text Generation
+HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/gpt2"  # Change to "bloom" if needed
 HUGGINGFACE_HEADERS = {"Authorization": f"Bearer {HUGGINGFACE_API_KEY}"}
-GIANT_BOMB_API_URL = f"https://www.giantbomb.com/api/characters/?api_key={GIANT_BOMB_API_KEY}&format=json"
 
-# Track last used category for cycling
-SELECTION_TRACKER_FILE = "last_category_used.json"
+# Giant Bomb API for Game Characters
+GAMING_CHARACTER_API = f"https://www.giantbomb.com/api/characters/?api_key={GIANTBOMB_API_KEY}&format=json"
 
-# Midnight Club Vehicles (Expanded)
+# Midnight Club Vehicles
 MIDNIGHT_CLUB_CARS = [
     "Big Red DUB Escalade", "Black DUB EXT", "DUB Chrysler 300C", "DUB Dodge Magnum",
     "DUB Mercedes-Benz SL55 AMG", "68 Pontiac GTO", "DUB 96 Chevy Impala SS", "Hummer H1",
@@ -40,106 +39,96 @@ MIDNIGHT_CLUB_CHARACTERS = [
     "AJ", "Lester"
 ]
 
-# Context-Based Question Templates
-CAR_QUESTIONS = [
-    "If `{}` was a person, what kind of driver would they be?",
-    "Would `{}` be a top or bottom in a Midnight Club race?",
-    "Describe `{}` in the most sus way possible.",
-    "If `{}` was your partner in crime, how would they help you escape the cops?",
-]
+# Rotating between categories
+ROTATION_INDEX = 0
+CATEGORY_LIST = ["car", "midnight_character", "game_character"]
 
-CHARACTER_QUESTIONS = [
-    "If `{}` had to seduce someone to win a race, how would they do it?",
-    "Describe `{}`'s most sus moment in their Midnight Club career.",
-    "If `{}` had a secret lover in Midnight Club, who would it be?",
-    "How would `{}` flirt their way out of getting pulled over?",
-]
+# Function to fetch a random car
+def get_random_car():
+    return random.choice(MIDNIGHT_CLUB_CARS)
 
-# Function to Cycle Between Categories
-def get_next_category():
-    categories = ["car", "character", "game_character"]
-    
-    # Load last used category
-    if os.path.exists(SELECTION_TRACKER_FILE):
-        with open(SELECTION_TRACKER_FILE, "r") as f:
-            last_category = json.load(f).get("last_used", "")
-    else:
-        last_category = ""
+# Function to fetch a random Midnight Club character
+def get_random_midnight_character():
+    return random.choice(MIDNIGHT_CLUB_CHARACTERS)
 
-    # Determine next category
-    if last_category not in categories:
-        next_category = categories[0]  # Default start with cars
-    else:
-        current_index = categories.index(last_category)
-        next_category = categories[(current_index + 1) % len(categories)]
-
-    # Save new category selection
-    with open(SELECTION_TRACKER_FILE, "w") as f:
-        json.dump({"last_used": next_category}, f)
-
-    return next_category
-
-# Function to Get a Random Subject Based on Cycling Category
-def get_random_subject():
-    category = get_next_category()
-
-    if category == "car":
-        return random.choice(MIDNIGHT_CLUB_CARS), "car"
-    elif category == "character":
-        return random.choice(MIDNIGHT_CLUB_CHARACTERS), "character"
-    else:
-        return get_random_game_character(), "character"
-
-# Function to Fetch a Random Gaming Character
+# Function to fetch a random gaming character from Giant Bomb API
 def get_random_game_character():
     try:
-        response = requests.get(GIANT_BOMB_API_URL)
+        headers = {"User-Agent": "GayChallengeBot"}
+        response = requests.get(GAMING_CHARACTER_API, headers=headers)
         data = response.json()
-        character_list = data["results"]
-        return random.choice(character_list)["name"]
+
+        if "results" in data and data["results"]:
+            return random.choice(data["results"])["name"]
+        else:
+            raise ValueError("No results from Giant Bomb API.")
+
     except Exception as e:
-        print(f"❌ Error fetching gaming character: {e}")
+        print(f"❌ Giant Bomb API Error: {e}")  # Log error
         return random.choice(MIDNIGHT_CLUB_CHARACTERS)  # Fallback
 
-# Function to Get a Funny LGBTQ+ Themed Question
-def generate_funny_question(category):
-    data = {"inputs": "Generate a funny LGBTQ+ question about cars and racing" if category == "car" else "Generate a funny LGBTQ+ question about characters in a game"}
+# Function to rotate between categories
+def get_random_subject():
+    global ROTATION_INDEX
+    category = CATEGORY_LIST[ROTATION_INDEX]
     
+    if category == "car":
+        subject = get_random_car()
+    elif category == "midnight_character":
+        subject = get_random_midnight_character()
+    else:
+        subject = get_random_game_character()
+
+    # Move to the next category
+    ROTATION_INDEX = (ROTATION_INDEX + 1) % len(CATEGORY_LIST)
+    return subject, category
+
+# Function to generate a funny LGBTQ+ question
+def generate_funny_question(subject, category):
     try:
+        prompt = f"Generate a funny LGBTQ+ question about a {category}: {subject}."
+        data = {"inputs": prompt}
         response = requests.post(HUGGINGFACE_API_URL, headers=HUGGINGFACE_HEADERS, json=data)
-        
-        # Log the response status
-        print(f"🔍 Hugging Face API Status: {response.status_code}")
-
-        # If API call fails, print the error response
-        if response.status_code != 200:
-            print(f"❌ Hugging Face API Error: {response.text}")
-            return None
-
         result = response.json()
-        
-        # Log the actual response content
-        print(f"📜 Hugging Face API Response: {result}")
 
-        return result[0]["generated_text"]
+        print(f"🔍 Hugging Face API Response: {result}")  # Debugging Log
+
+        if isinstance(result, list) and "generated_text" in result[0]:
+            return result[0]["generated_text"]
+        else:
+            raise ValueError("No valid text returned from API.")
 
     except Exception as e:
-        print(f"❌ Exception calling Hugging Face API: {e}")
-        return None  # API failure
+        print(f"❌ Hugging Face API Error: {e}")  # Log error
+        print("⚠️ Falling back to default question templates.")
 
-# Function to Generate Full Challenge
+        # Ensure the question fits the category
+        if category == "car":
+            return random.choice([
+                "How would `{}` be modified in the gayest way possible?",
+                "What if `{}` had a fabulous pride-themed paint job?",
+                "If `{}` could talk, what super gay thing would it say?",
+            ]).format(subject)
+        elif category == "midnight_character":
+            return random.choice([
+                "Describe `{}` in the gayest way possible.",
+                "If `{}` was in a pride parade, what would they wear?",
+                "Speedrun `{}`. What’s the fastest way to make it sound dirty?",
+            ]).format(subject)
+        else:  # game_character
+            return random.choice([
+                "What if `{}` was a drag queen, what would their stage name be?",
+                "Describe `{}` as if they were the lead in a gay romance movie.",
+                "If `{}` had to survive using only sass, how would they win?",
+            ]).format(subject)
+
+# Function to generate the challenge message
 def generate_challenge():
     subject, category = get_random_subject()
-    question_template = generate_funny_question(category)
+    question = generate_funny_question(subject, category)
+    return question
 
-    # If Hugging Face API fails, use fallback questions
-    if not question_template:
-        print("⚠️ Using fallback question template!")
-        question_template = random.choice(CAR_QUESTIONS if category == "car" else CHARACTER_QUESTIONS)
-
-    return question_template.format(subject)
-
-# Function to Send Challenge to Webhooks (Both Discord & Test Webhook)
+# Function to send the challenge to Discord Webhook
 def send_challenge():
     challenge = generate_challenge()
     data = {
@@ -149,13 +138,15 @@ def send_challenge():
 
     # Send to Discord Webhook
     response = requests.post(WEBHOOK_URL, json=data)
+
     if response.status_code == 204:
         print("✅ Challenge sent successfully to Discord!")
     else:
         print(f"❌ Failed to send. Status Code: {response.status_code} - {response.text}")
 
-    # Send to Test Webhook (Webhook.site)
+    # Send to Test Webhook (webhook.site)
     test_response = requests.post(TEST_WEBHOOK_URL, json=data)
+
     if test_response.status_code == 204:
         print("✅ Test challenge sent successfully to Webhook.site!")
     else:
@@ -163,5 +154,27 @@ def send_challenge():
 
     return response.json() if response.status_code == 200 else None
 
-# Execute the Workflow
+# Function to pin message in Discord
+def pin_message(message_id):
+    url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/pins/{message_id}"
+    headers = {
+        "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.put(url, headers=headers)
+    
+    if response.status_code == 204:
+        print("📌 Message pinned successfully!")
+    else:
+        print(f"❌ Failed to pin message. Status Code: {response.status_code} - {response.text}")
+
+# Execute the workflow
 message_response = send_challenge()
+
+# If message was sent, extract ID and pin it
+if message_response and "id" in message_response:
+    message_id = message_response["id"]
+    pin_message(message_id)
+else:
+    print("⚠️ Message ID not found. Unable to pin.")
