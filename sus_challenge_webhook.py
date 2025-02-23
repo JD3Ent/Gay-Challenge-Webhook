@@ -103,24 +103,19 @@ def get_random_subject():
 # Function to generate funny questions using predefined or crossover templates
 def generate_funny_question(subject, category):
     if category == "game_character":
-        # Pick another random Midnight Club character for crossover questions
         mc_character = get_random_midnight_character()
         
-        # Use crossover templates specifically for game characters + MC characters
         if CROSSOVER_QUESTIONS:
             template = random.choice(CROSSOVER_QUESTIONS)
             return template.format(subject, mc_character)
         
-        # Fallback if no crossover questions are available
         return f"What would happen if {subject} met {mc_character} in Midnight Club?"
 
     elif category == "car":
-        # Use car-specific templates for cars
         if CAR_SPECIFIC_QUESTIONS:
             template = random.choice(CAR_SPECIFIC_QUESTIONS)
             return template.format(subject)
         
-        # Fallback if no car-specific questions are available
         return f"Describe something sus about the car {subject}."
 
     else:  # For midnight_character or others, use general predefined questions
@@ -128,7 +123,6 @@ def generate_funny_question(subject, category):
             template = random.choice(PREDEFINED_QUESTIONS)
             return template.format(subject)
         
-        # Fallback if no predefined questions are available
         return f"Describe something sus about {subject}."
 
 # Function to generate the challenge message
@@ -137,18 +131,64 @@ def generate_challenge():
     question = generate_funny_question(subject, category)
     return question
 
+# Function to calculate reactions and determine winners for the voting system
+def calculate_reactions():
+    try:
+        if not os.path.exists(LAST_MESSAGE_ID_FILE):
+            logging.info("No previous message ID found. Skipping reaction tally.")
+            return None, None
+        
+        with open(LAST_MESSAGE_ID_FILE, 'r') as f:
+            last_message_id = f.read().strip()
+        
+        url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/messages/{last_message_id}/reactions"
+        
+        headers = {
+            "Authorization": f"Bot {DISCORD_BOT_TOKEN}"
+        }
+        
+        response = requests.get(url, headers=headers)
+        
+        pride_counts = {}
+        skull_counts = {}
+        
+        if response.status_code == 200:
+            message_data = response.json()
+            
+            for reaction in message_data.get("reactions", []):
+                emoji_name = reaction["emoji"]["name"]
+                
+                if emoji_name == "🏳️‍🌈":
+                    for user in requests.get(reaction["url"], headers=headers).json():
+                        pride_counts[user["id"]] = pride_counts.get(user["id"], 0) + 1
+                
+                elif emoji_name == "💀":
+                    for user in requests.get(reaction["url"], headers=headers).json():
+                        skull_counts[user["id"]] = skull_counts.get(user["id"], 0) + 1
+            
+            gayest_user_id = max(pride_counts, key=pride_counts.get) if pride_counts else None
+            token_straight_user_id = max(skull_counts, key=skull_counts.get) if skull_counts else None
+            
+            return gayest_user_id, token_straight_user_id
+        
+        else:
+            logging.error(f"Failed to fetch message reactions. Status Code: {response.status_code}, Response: {response.text}")
+            return None, None
+    
+    except Exception as e:
+        logging.error(f"Error calculating reactions: {e}")
+        return None, None
+
 # Function to send the challenge to Discord Webhook and pin it
 def send_challenge():
     challenge_message = generate_challenge()
     
     data = {
-        # Format message for Discord
         "content": f"🌈 **Sus Comment Challenge!** 🌈\n💬 {challenge_message}\n\n🗳️ **Vote for the best response!** React with 🔥 or 💀.",
         "username": f"Sus Challenge Bot"
     }
 
     try:
-        # Send message to Discord Webhook and store message ID for reactions later
         response = requests.post(WEBHOOK_URL, json=data)
         
         if response.status_code == 200:
@@ -165,37 +205,52 @@ def send_challenge():
         
         else:
             logging.error(f"Failed to send challenge. Status Code: {response.status_code}, Response: {response.text}")
-        
-        # Send test webhook (for debugging)
-        test_response = requests.post(TEST_WEBHOOK_URL, json=data)
-        
-        if test_response.status_code == 204:
-            logging.info("Test challenge sent successfully!")
-        else:
-            logging.error(f"Failed to send test challenge. Status Code: {test_response.status_code}, Response: {test_response.text}")
 
-    except Exception as e:
-        logging.error(f"Error sending challenge to Discord: {e}")
+         # Calculate reactions before sending next question.
+         gayest_user_id, token_straight_user_id = calculate_reactions()
+         
+         mention_messages = []
+         
+         if gayest_user_id:
+             mention_messages.append(f"<@{gayest_user_id}> you were the gayest of all for that last question! 🌈")
+         
+         if token_straight_user_id:
+             mention_messages.append(f"<@{token_straight_user_id}> you were the token straight one in the server! 💀")
+         
+         if mention_messages:
+             mentions_content = "\n".join(mention_messages)
+             requests.post(WEBHOOK_URL, json={"content": mentions_content})
+
+         # Send test webhook (for debugging)
+         test_response = requests.post(TEST_WEBHOOK_URL, json=data)
+
+         if test_response.status_code == 204:
+             logging.info("Test challenge sent successfully!")
+         else:
+             logging.error(f"Failed to send test challenge. Status Code: {test_response.status_code}, Response: {test_response.text}")
+
+     except Exception as e:
+         logging.error(f"Error sending challenge to Discord: {e}")
 
 # Function to pin a message in Discord using the bot token and channel ID
 def pin_message(message_id):
-    url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/pins/{message_id}"
-    
-    headers = {
-        "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
-        "Content-Type": "application/json"
-    }
+     url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/pins/{message_id}"
+     
+     headers = {
+         "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
+         "Content-Type": "application/json"
+     }
 
-    try:
-        response = requests.put(url, headers=headers)
-        
-        if response.status_code == 204:
-            logging.info("Message pinned successfully!")
-        else:
-            logging.error(f"Failed to pin message. Status Code: {response.status_code}, Response: {response.text}")
-    
-    except Exception as e:
-        logging.error(f"Error pinning message: {e}")
+     try:
+         response = requests.put(url, headers=headers)
+         
+         if response.status_code == 204:
+             logging.info("Message pinned successfully!")
+         else:
+             logging.error(f"Failed to pin message. Status Code: {response.status_code}, Response: {response.text}")
+     
+     except Exception as e:
+         logging.error(f"Error pinning message: {e}")
 
 # Main execution workflow (keeps pinning logic intact)
 if __name__ == "__main__":
