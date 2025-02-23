@@ -9,35 +9,29 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 # Load environment variables
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Discord Webhook
 TEST_WEBHOOK_URL = os.getenv("TEST_WEBHOOK_URL")  # Webhook.site URL for testing
-DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")  # Bot token for pinning
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")  # Bot token for pinning and fetching messages
 CHANNEL_ID = os.getenv("DISCORD_CHANNEL_ID")  # Discord Channel ID
 GIANTBOMB_API_KEY = os.getenv("GIANTBOMB_API_KEY")  # Giant Bomb API Key
 
-# Giant Bomb API Config
-GAMING_CHARACTER_API = f"https://www.giantbomb.com/api/characters/?api_key={GIANTBOMB_API_KEY}&format=json"
+# File paths for external data
+MC_CARS_FILE = "mc_cars.txt"
+MC_CHARACTERS_FILE = "mc_characters.txt"
+LAST_MESSAGE_ID_FILE = "last_message_id.txt"
 
-# Midnight Club Vehicles
-MIDNIGHT_CLUB_CARS = [
-    "Big Red DUB Escalade", "Black DUB EXT", "DUB Chrysler 300C", "DUB Dodge Magnum",
-    "DUB Mercedes-Benz SL55 AMG", "68 Pontiac GTO", "DUB 96 Chevy Impala SS", "Hummer H1",
-    "Lamborghini Murciélago", "Nissan Skyline GT-R R34", "Toyota Supra MK4",
-    "69 Plymouth Netcoder", "2005 Ford Mustang GT", "Pagani Zonda C12", "81 Chevrolet Camaro Z28",
-    "Mitsubishi 3000GT VR-4", "Saleen S7 Twin Turbo", "Audi RS4", "DUB Dodge Charger SRT8",
-    "Chrysler ME Four Twelve", "Volkswagen Golf R32", "Mitsubishi Lancer Evo VIII", "Saiku XS",
-    "Bryston V", "Scneller V8", "Cocotte", "Veloci", "Emu", "71 Bestia",
-    "Smugglers Run Buggie", "SLF"
-]
+# Load data from an external file
+def load_data(file_path):
+    try:
+        with open(file_path, 'r') as f:
+            data = [line.strip() for line in f if line.strip()]
+            logging.info(f"Loaded {len(data)} items from {file_path}")
+            return data
+    except Exception as e:
+        logging.error(f"Error loading data from {file_path}: {e}")
+        return []
 
-# Midnight Club Characters
-MIDNIGHT_CLUB_CHARACTERS = [
-    "Oscar", "Angel", "Apone", "Moses", "Savo", "Tomoya", "Vince", "Dice", "Gina", "Vito", "Andrew", "Phil",
-    "Vanessa", "Brooke", "Lamont", "Carlos", "Bishop", "Kioshi", "Caesar", "Angel", "Leo", 
-    "Trust Fund Baby From MC2", "Hector", "The City Champs", "Andrew", "Roy", "Annie",
-    "Fernando", "Karol", "Doc", "Baby-T", "Yo-Yo", "Nails", "Arnie", "Rachel", "Sara", "Kayla", "Walker", 
-    "AJ", "Lester"
-]
-
-CATEGORY_LIST = ["car", "midnight_character", "game_character"]
+# Load Midnight Club cars and characters from external files
+MIDNIGHT_CLUB_CARS = load_data(MC_CARS_FILE)
+MIDNIGHT_CLUB_CHARACTERS = load_data(MC_CHARACTERS_FILE)
 
 # Load questions from an external file
 def load_questions(file_path):
@@ -55,18 +49,25 @@ PREDEFINED_QUESTIONS = load_questions("questions.txt")
 CROSSOVER_QUESTIONS = load_questions("crossover.txt")
 CAR_SPECIFIC_QUESTIONS = load_questions("cars.txt")
 
-import random
+CATEGORY_LIST = ["car", "midnight_character", "game_character"]
 
-# Initialize ROTATION_INDEX with a random starting value
-ROTATION_INDEX = random.randint(0, len(CATEGORY_LIST) - 1)
+ROTATION_INDEX = 0  # Used to rotate categories
 
 # Function to fetch a random car
 def get_random_car():
-    return random.choice(MIDNIGHT_CLUB_CARS)
+    if MIDNIGHT_CLUB_CARS:
+        return random.choice(MIDNIGHT_CLUB_CARS)
+    else:
+        logging.warning("No cars available. Returning default fallback.")
+        return "Generic Car"
 
 # Function to fetch a random Midnight Club character
 def get_random_midnight_character():
-    return random.choice(MIDNIGHT_CLUB_CHARACTERS)
+    if MIDNIGHT_CLUB_CHARACTERS:
+        return random.choice(MIDNIGHT_CLUB_CHARACTERS)
+    else:
+        logging.warning("No characters available. Returning default fallback.")
+        return "Generic Character"
 
 # Function to fetch a random gaming character from Giant Bomb API
 def get_random_game_character():
@@ -82,7 +83,7 @@ def get_random_game_character():
     
     except Exception as e:
         logging.error(f"Giant Bomb API Error: {e}")
-        return random.choice(MIDNIGHT_CLUB_CHARACTERS)  # Fallback
+        return get_random_midnight_character()  # Fallback to an MC character
 
 # Function to rotate between categories (preserves rotation logic)
 def get_random_subject():
@@ -147,7 +148,7 @@ def send_challenge():
     }
 
     try:
-        # Send message to Discord Webhook
+        # Send message to Discord Webhook and store message ID for reactions later
         response = requests.post(WEBHOOK_URL, json=data)
         
         if response.status_code == 200:
@@ -155,6 +156,9 @@ def send_challenge():
             message_id = message_response.get("id")
             
             if message_id:
+                with open(LAST_MESSAGE_ID_FILE, 'w') as f:
+                    f.write(message_id)  # Save the last message ID
+            
                 pin_message(message_id)  # Pin the message
             
             logging.info("Challenge sent successfully!")
@@ -162,38 +166,18 @@ def send_challenge():
         else:
             logging.error(f"Failed to send challenge. Status Code: {response.status_code}, Response: {response.text}")
         
-        # Send test webhook (for debugging)
-        test_response = requests.post(TEST_WEBHOOK_URL, json=data)
-        
-        if test_response.status_code == 204:
-            logging.info("Test challenge sent successfully!")
-        else:
-            logging.error(f"Failed to send test challenge. Status Code: {test_response.status_code}, Response: {test_response.text}")
-    
-    except Exception as e:
-        logging.error(f"Error sending challenge to Discord: {e}")
+         # Send test webhook (for debugging)
+         test_response = requests.post(TEST_WEBHOOK_URL, json=data)
+         
+         if test_response.status_code == 204:
+             logging.info("Test challenge sent successfully!")
+         else:
+             logging.error(f"Failed to send test challenge. Status Code: {test_response.status_code}, Response: {test_response.text}")
+
+     except Exception as e:
+         logging.error(f"Error sending challenge to Discord: {e}")
 
 # Function to pin a message in Discord using the bot token and channel ID
 def pin_message(message_id):
-    url = f"https://discord.com/api/v9/channels/{CHANNEL_ID}/pins/{message_id}"
-    
-    headers = {
-        "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
-        "Content-Type": "application/json"
-    }
-
-    try:
-        response = requests.put(url, headers=headers)
-        
-        if response.status_code == 204:
-            logging.info("Message pinned successfully!")
-        else:
-            logging.error(f"Failed to pin message. Status Code: {response.status_code}, Response: {response.text}")
-    
-    except Exception as e:
-        logging.error(f"Error pinning message: {e}")
-
-# Main execution workflow (keeps pinning logic intact)
-if __name__ == "__main__":
-   send_challenge()
+     url
     
