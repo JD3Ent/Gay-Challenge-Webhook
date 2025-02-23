@@ -1,8 +1,110 @@
-"Big Red DUB Escalade", "Black DUB EXT", "DUB Chrysler 300C", "DUB Dodge Magnum",
-    "DUB Mercedes-Benz SL55 AMG", "68 Pontiac GTO", "DUB 96 Chevy Impala SS", "Hummer H1",
-    "Lamborghini Murciélago", "Nissan Skyline GT-R R34", "Toyota Supra MK4",
-    "69 Plymouth Netcoder", "2005 Ford Mustang GT", "Pagani Zonda C12", "81 Chevrolet Camaro Z28",
-    "Mitsubishi 3000GT VR-4", "Saleen S7 Twin Turbo", "Audi RS4", "DUB Dodge Charger SRT8",
-    "Chrysler ME Four Twelve", "Volkswagen Golf R32", "Mitsubishi Lancer Evo VIII", "Saiku XS",
-    "Bryston V", "Scneller V8", "Cocotte", "Veloci", "Emu", "71 Bestia",
-    "Smugglers Run Buggie", "SLF"
+Taxi
+London Cab
+City Bus
+Jones J400 
+Jones J450 
+Victory 
+Victory Classic 
+Victory Super 
+Citi Turbo 
+Emu 
+Monsoni
+Interna
+Veloci 
+Saikou 
+Saikou XS 
+Torque JX 
+Torrida 
+Torrida Cheetah 
+Cohete 
+Nokota 600 
+Acura NSX
+Audi A4 DUB Edition
+Audi TT 1.8T Quattro
+Audi TT 3.2 Quattro
+Bentley Continental GT
+Big Red DUB Escalade
+Black DUB EXT
+Cadillac CTS-V
+Cadillac Escalade EXT
+Cadillac Escalade EXT DUB Edition
+Chevrolet Bel Air 1955
+Chevrolet Bel Air 1957
+Chevrolet Camaro Z28 1981
+Chevrolet Camaro Z28 1969
+Chevrolet Corvette C3 Stingray 1968
+Chevrolet Corvette Z06 2006
+Chrysler 300C DUB Edition
+Chrysler Crossfire SRT-6 Coupe DUB Edition
+Dodge Charger R/T Hemi 1969
+Dodge Charger SRT-8 DUB Edition
+Dodge Magnum RT AWD DUB Edition
+Dodge Neon SRT-4 ACR 2005
+Dodge Viper GTS ACR 1999
+Dodge Viper SRT-10 Convertible 2003
+Ford Focus ZX3 SVT 2004
+Ford GT40 Concept 2005
+Ford Mustang GT Convertible 2005
+Ford Mustang Mach 1 Coupe 1970
+Hummer H1 Alpha Wagon DUB Edition
+Infiniti G35 Coupe DUB Edition
+Lamborghini Diablo VT Roadster 1998
+Lamborghini Gallardo Coupe AWD 2004
+Lamborghini Murciélago Coupe AWD 2004
+Lexus GS430 Sedan VIP Style DUB Edition 2006
+Lincoln Navigator SUV AWD DUB Edition 2006
+Mazda RX-7 Spirit R Type-A FD3S Coupe RWD 2002
+Mazda RX-8 Coupe RWD Renesis Engine 2005 
+Mercedes-Benz CL55 AMG Coupe RWD VIP Style DUB Edition 2005 
+Mercedes-Benz SL55 AMG Convertible DUB Edition 
+Mitsubishi Eclipse GSX AWD Tuner Coupe 
+Mitsubishi Lancer Evolution VIII MR AWD Sedan 
+Nissan Skyline GT-R R34 AWD Tuner Icon 
+Pagani Zonda C12 S Coupe Hypercar 
+Plymouth Road Runner Hemi Muscle Car Classic 
+Pontiac GTO Judge Muscle Car Classic 
+Saleen Mustang S281 Supercharged  
+Saleen S7 Twin Turbo
+Toyota Supra MKIV Turbo Tuner Coupe Iconic 
+Volkswagen Golf GTI MK4 Hatchback 
+Volkswagen Jetta GLI Sedan Tuner Iconic 
+Yamaha YZF-R1 Superbike Legend 
+Suzuki GSX-R1000 Superbike Legend 
+Acura Integra LS Hatchback Tuner Iconic 
+Audi R8 V10 AWD Exotic Modern Supercar 
+Audi RS4 Avant Wagon AWD 
+Bentley Continental Supersport
+BMW M3 E92 Coupe  
+Buick GNX Grand National Turbo 
+Cadillac CTS-V Sedan
+Cadillac XLR-V Convertible 
+Chevrolet Camaro Concept 
+Chevrolet Chevelle SS 
+Chevrolet Corvette Z06 C6 
+Aston Martin DB9 Coupe
+Aston Martin DBS Coupe
+Bentley Continental GT Speed Coupe
+Bentley Continental Supersports Convertible
+BMW M6 Coupe E63
+BMW Z4 M Roadster E85
+Chevrolet Camaro RS 1969 
+Chevrolet El Camino SS 1970 
+Chevrolet Impala SS 1996 
+Chevrolet Nova SS 1969 
+Dodge Challenger R/T 1970 
+Dodge Charger Daytona Hemi 1969 
+Dodge Charger SRT8 Super Bee 2007 
+Ferrari Enzo Ferrari 
+Ferrari F430 Scuderia Coupe 
+Ford Mustang Boss 302 1969 
+Ford Mustang GT Convertible 2008 
+Lamborghini Countach LP5000 QV 1985 
+Lamborghini Diablo VT 6.0 SE Coupe 2001 
+Mazda RX-7 FD Sprit R Type A 2002 
+Mazda RX-8 Mazdaspeed Version II 2008
+Nissan Silvia S14 Kouki 1997 
+Nissan Skyline GT-R R32 V-Spec II 1994 
+Porsche Carrera GT 2004 
+Porsche Cayman S 987c Coupe 2008 
+Volkswagen Beetle RSI AWD Tuner Edition 2001
+Volkswagen Jetta GLI Mk5 Sedan Tuner Edition 2006
