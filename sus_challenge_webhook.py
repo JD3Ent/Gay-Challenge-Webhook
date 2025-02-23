@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 # Load API Keys & Webhooks from GitHub Secrets
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Discord Webhook
-TEST_WEBHOOK_URL = os.getenv("TEST_WEBHOOK_URL")  # Webhook.site URL for testing
+TEST_WEBHOOK_URL = os.getenv("TEST_WEBHOOK_URL")  # Webhook.site for debugging
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")  # Bot token for pinning
 CHANNEL_ID = os.getenv("DISCORD_CHANNEL_ID")  # Discord Channel ID
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")  # Hugging Face API Key
@@ -97,28 +97,49 @@ def get_random_game_character():
         data = response.json()
         character_list = data["results"]
         return random.choice(character_list)["name"]
-    except:
+    except Exception as e:
+        print(f"❌ Error fetching gaming character: {e}")
         return random.choice(MIDNIGHT_CLUB_CHARACTERS)  # Fallback
 
 # Function to Get a Funny LGBTQ+ Themed Question
 def generate_funny_question(category):
     data = {"inputs": "Generate a funny LGBTQ+ question about cars and racing" if category == "car" else "Generate a funny LGBTQ+ question about characters in a game"}
     
-    response = requests.post(HUGGINGFACE_API_URL, headers=HUGGINGFACE_HEADERS, json=data)
-    
     try:
+        response = requests.post(HUGGINGFACE_API_URL, headers=HUGGINGFACE_HEADERS, json=data)
+        
+        # Log the response status
+        print(f"🔍 Hugging Face API Status: {response.status_code}")
+
+        # If API call fails, print the error response
+        if response.status_code != 200:
+            print(f"❌ Hugging Face API Error: {response.text}")
+            return None
+
         result = response.json()
+        
+        # Log the actual response content
+        print(f"📜 Hugging Face API Response: {result}")
+
         return result[0]["generated_text"]
-    except:
-        return random.choice(CAR_QUESTIONS if category == "car" else CHARACTER_QUESTIONS)
+
+    except Exception as e:
+        print(f"❌ Exception calling Hugging Face API: {e}")
+        return None  # API failure
 
 # Function to Generate Full Challenge
 def generate_challenge():
     subject, category = get_random_subject()
     question_template = generate_funny_question(category)
+
+    # If Hugging Face API fails, use fallback questions
+    if not question_template:
+        print("⚠️ Using fallback question template!")
+        question_template = random.choice(CAR_QUESTIONS if category == "car" else CHARACTER_QUESTIONS)
+
     return question_template.format(subject)
 
-# Function to Send Challenge to Webhook
+# Function to Send Challenge to Webhooks (Both Discord & Test Webhook)
 def send_challenge():
     challenge = generate_challenge()
     data = {
@@ -128,11 +149,17 @@ def send_challenge():
 
     # Send to Discord Webhook
     response = requests.post(WEBHOOK_URL, json=data)
-
     if response.status_code == 204:
         print("✅ Challenge sent successfully to Discord!")
     else:
         print(f"❌ Failed to send. Status Code: {response.status_code} - {response.text}")
+
+    # Send to Test Webhook (Webhook.site)
+    test_response = requests.post(TEST_WEBHOOK_URL, json=data)
+    if test_response.status_code == 204:
+        print("✅ Test challenge sent successfully to Webhook.site!")
+    else:
+        print(f"❌ Failed to send test message. Status Code: {test_response.status_code} - {test_response.text}")
 
     return response.json() if response.status_code == 200 else None
 
